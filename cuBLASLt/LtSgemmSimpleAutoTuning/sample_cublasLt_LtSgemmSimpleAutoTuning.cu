@@ -36,6 +36,20 @@
 #include "sample_cublasLt_LtSgemmSimpleAutoTuning.h"
 #include "helpers.h"
 
+void printAlgo2(const cublasLtMatmulAlgo_t& algo) {
+    int algoId, tile, swizzle, customOption, numSplitsK, reductionScheme;
+
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_ID, &algoId, sizeof(algoId), NULL));
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_TILE_ID, &tile, sizeof(tile), NULL));
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_SPLITK_NUM, &numSplitsK, sizeof(numSplitsK), NULL));
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_REDUCTION_SCHEME, &reductionScheme, sizeof(reductionScheme), NULL));
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_CTA_SWIZZLING, &swizzle, sizeof(swizzle), NULL));
+    checkCublasStatus(cublasLtMatmulAlgoConfigGetAttribute(&algo, CUBLASLT_ALGO_CONFIG_CUSTOM_OPTION, &customOption, sizeof(customOption), NULL));
+
+    printf("algo={ Id=%d, tileIdx=%d splitK=%d reduc=%d swizzle=%d custom=%d }\n",
+        algoId, tile, numSplitsK, reductionScheme, swizzle, customOption);
+}
+
 float median(std::vector<float>& times) {
     const size_t size = times.size();
     if (size == 0) {
@@ -151,6 +165,8 @@ void LtSgemmSimpleAutoTuning(cublasLtHandle_t ltHandle,
         }
 
         time = median(algoTimes);
+        printAlgo2(heuristicResult[algoIdx].algo);
+        printf("runtime: %f\n", time);
 
         if (algoIdx == 0 || time < bestAlgoTime) {
             bestAlgoTime = time;

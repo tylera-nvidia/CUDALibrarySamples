@@ -73,7 +73,8 @@ int main() {
                                 props.workspaceSize,
                                 algo);
     });
-
+    
+    printf("===== Fastest =====\n");
     printAlgo(algo);
 
     return 0;
